@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -36,10 +37,55 @@ class UserState extends ChangeNotifier {
   }
 }
 
-class HomePage extends StatelessWidget {
+class RankListPage extends StatefulWidget {
+  @override
+  _RankListPageState createState() => _RankListPageState();
+}
+
+class _RankListPageState extends State<RankListPage> {
   @override
   Widget build(BuildContext context) {
-    return Scaffold();
+    final UserState userState = Provider.of<UserState>(context);
+    final User user = userState.user!;
+
+    return Scaffold(
+      appBar: AppBar(
+        title: Text("ランキング一覧"),
+      ),
+      body: Column(
+        children: <Widget>[
+          Text('${user.email}'),
+          Expanded(
+            child: StreamBuilder<QuerySnapshot>(
+              stream: FirebaseFirestore.instance
+                  .collection('ranks')
+                  .orderBy('date')
+                  .snapshots(),
+              builder: (context, snapshot) {
+                // データが取得できた場合
+                if (snapshot.hasData) {
+                  final List<DocumentSnapshot> documents = snapshot.data!.docs;
+                  // 取得した一覧を元にリスト表示
+                  return ListView(
+                    children: documents.map((document) {
+                      return Card(
+                        child: ListTile(
+                          title: Text(document['text']),
+                        ),
+                      );
+                    }).toList(),
+                  );
+                }
+                // データが読込中の場合
+                return Center(
+                  child: Text('読込中...'),
+                );
+              },
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }
 
@@ -107,7 +153,7 @@ class _LoginPageState extends State<LoginPage> {
                       // ログインに成功した場合
                       await Navigator.of(context).pushReplacement(
                         MaterialPageRoute(builder: (context) {
-                          return HomePage();
+                          return RankListPage();
                         }),
                       );
                     } catch (e) {
@@ -137,7 +183,7 @@ class _LoginPageState extends State<LoginPage> {
                       // ユーザー登録に成功した場合
                       await Navigator.of(context).pushReplacement(
                         MaterialPageRoute(builder: (context) {
-                          return HomePage();
+                          return RankListPage();
                         }),
                       );
                     } catch (e) {
