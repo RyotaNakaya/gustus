@@ -57,6 +57,7 @@ class _RankListPageState extends State<RankListPage> {
           Text('${user.email}'),
           Expanded(
             child: StreamBuilder<QuerySnapshot>(
+              // TODO: 自分が登録したデータだけ fetch する
               stream: FirebaseFirestore.instance
                   .collection('ranks')
                   .orderBy('date')
@@ -71,6 +72,15 @@ class _RankListPageState extends State<RankListPage> {
                       return Card(
                         child: ListTile(
                           title: Text(document['name']),
+                          trailing: IconButton(
+                            icon: Icon(Icons.delete),
+                            onPressed: () async {
+                              await FirebaseFirestore.instance
+                                  .collection('ranks')
+                                  .doc(document.id)
+                                  .delete();
+                            },
+                          ),
                         ),
                       );
                     }).toList(),
