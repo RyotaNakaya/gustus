@@ -70,7 +70,7 @@ class _RankListPageState extends State<RankListPage> {
                     children: documents.map((document) {
                       return Card(
                         child: ListTile(
-                          title: Text(document['text']),
+                          title: Text(document['name']),
                         ),
                       );
                     }).toList(),
@@ -84,6 +84,85 @@ class _RankListPageState extends State<RankListPage> {
             ),
           ),
         ],
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () async {
+          await Navigator.of(context)
+              .push(MaterialPageRoute(builder: (context) {
+            return RankAddPage();
+          }));
+        },
+        child: Icon(Icons.add),
+      ),
+    );
+  }
+}
+
+class RankAddPage extends StatefulWidget {
+  @override
+  _RankAddPageState createState() => _RankAddPageState();
+}
+
+class _RankAddPageState extends State<RankAddPage> {
+  String _name = "";
+
+  Widget build(BuildContext context) {
+    final UserState userState = Provider.of<UserState>(context);
+    final User user = userState.user!;
+
+    return Scaffold(
+      appBar: AppBar(
+        title: Text("ランキング追加"),
+      ),
+      body: Container(
+        padding: EdgeInsets.all(64),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            Text(
+              _name,
+              style: TextStyle(color: Colors.blue),
+            ),
+            const SizedBox(height: 8),
+            TextField(
+              onChanged: (String value) {
+                setState(() {
+                  _name = value;
+                });
+              },
+            ),
+            const SizedBox(height: 8),
+            Container(
+              width: double.infinity,
+              child: ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  primary: Colors.blue,
+                ),
+                onPressed: () async {
+                  final date = DateTime.now().toLocal().toIso8601String();
+                  final email = user.email;
+                  await FirebaseFirestore.instance
+                      .collection('ranks') // コレクションID指定
+                      .doc() // ドキュメントID自動生成
+                      .set({'name': _name, 'email': email, 'date': date});
+                  // 1つ前の画面に戻る
+                  Navigator.of(context).pop();
+                },
+                child: Text("ランキング追加", style: TextStyle(color: Colors.white)),
+              ),
+            ),
+            const SizedBox(height: 8),
+            Container(
+              width: double.infinity,
+              child: TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+                child: Text("キャンセル"),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
