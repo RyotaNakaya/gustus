@@ -11,6 +11,7 @@ Future<void> main() async {
 }
 
 class GustusApp extends StatelessWidget {
+  GustusApp() : super();
   final UserState userState = UserState();
 
   @override
@@ -50,11 +51,11 @@ class _RankListPageState extends State<RankListPage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text("ランキング一覧"),
+        title: const Text('ランキング一覧'),
       ),
       body: Column(
         children: <Widget>[
-          Text('${user.email}'),
+          Text(user.email.toString()),
           Expanded(
             child: StreamBuilder<QuerySnapshot>(
               // TODO: 自分が登録したデータだけ fetch する
@@ -73,7 +74,7 @@ class _RankListPageState extends State<RankListPage> {
                         child: ListTile(
                           title: Text(document['name']),
                           trailing: IconButton(
-                            icon: Icon(Icons.delete),
+                            icon: const Icon(Icons.delete),
                             onPressed: () async {
                               await FirebaseFirestore.instance
                                   .collection('ranks')
@@ -87,7 +88,7 @@ class _RankListPageState extends State<RankListPage> {
                   );
                 }
                 // データが読込中の場合
-                return Center(
+                return const Center(
                   child: Text('読込中...'),
                 );
               },
@@ -102,7 +103,7 @@ class _RankListPageState extends State<RankListPage> {
             return RankAddPage();
           }));
         },
-        child: Icon(Icons.add),
+        child: const Icon(Icons.add),
       ),
     );
   }
@@ -114,7 +115,7 @@ class RankAddPage extends StatefulWidget {
 }
 
 class _RankAddPageState extends State<RankAddPage> {
-  String _name = "";
+  String _name = '';
 
   Widget build(BuildContext context) {
     final UserState userState = Provider.of<UserState>(context);
@@ -122,16 +123,16 @@ class _RankAddPageState extends State<RankAddPage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text("ランキング追加"),
+        title: const Text('ランキング追加'),
       ),
       body: Container(
-        padding: EdgeInsets.all(64),
+        padding: const EdgeInsets.all(64),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
             Text(
               _name,
-              style: TextStyle(color: Colors.blue),
+              style: const TextStyle(color: Colors.blue),
             ),
             const SizedBox(height: 8),
             TextField(
@@ -158,7 +159,8 @@ class _RankAddPageState extends State<RankAddPage> {
                   // 1つ前の画面に戻る
                   Navigator.of(context).pop();
                 },
-                child: Text("ランキング追加", style: TextStyle(color: Colors.white)),
+                child: const Text('ランキング追加',
+                    style: TextStyle(color: Colors.white)),
               ),
             ),
             const SizedBox(height: 8),
@@ -168,7 +170,7 @@ class _RankAddPageState extends State<RankAddPage> {
                 onPressed: () {
                   Navigator.of(context).pop();
                 },
-                child: Text("キャンセル"),
+                child: const Text('キャンセル'),
               ),
             ),
           ],
@@ -197,13 +199,13 @@ class _LoginPageState extends State<LoginPage> {
     return Scaffold(
       body: Center(
         child: Container(
-          padding: EdgeInsets.all(24),
+          padding: const EdgeInsets.all(24),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
               // メールアドレス入力
               TextFormField(
-                decoration: InputDecoration(labelText: 'メールアドレス'),
+                decoration: const InputDecoration(labelText: 'メールアドレス'),
                 onChanged: (String value) {
                   setState(() {
                     email = value;
@@ -212,7 +214,7 @@ class _LoginPageState extends State<LoginPage> {
               ),
               // パスワード入力
               TextFormField(
-                decoration: InputDecoration(labelText: 'パスワード'),
+                decoration: const InputDecoration(labelText: 'パスワード'),
                 obscureText: true,
                 onChanged: (String value) {
                   setState(() {
@@ -221,7 +223,7 @@ class _LoginPageState extends State<LoginPage> {
                 },
               ),
               Container(
-                padding: EdgeInsets.all(8),
+                padding: const EdgeInsets.all(8),
                 // メッセージ表示
                 child: Text(infoText),
               ),
@@ -229,7 +231,7 @@ class _LoginPageState extends State<LoginPage> {
                 width: double.infinity,
                 // ログイン登録ボタン
                 child: ElevatedButton(
-                  child: Text('ログイン'),
+                  child: const Text('ログイン'),
                   onPressed: () async {
                     try {
                       // メール/パスワードでログイン
@@ -248,7 +250,7 @@ class _LoginPageState extends State<LoginPage> {
                     } catch (e) {
                       // ログインに失敗した場合
                       setState(() {
-                        infoText = "ログインに失敗しました：${e.toString()}";
+                        infoText = 'ログインに失敗しました：${e.toString()}';
                       });
                     }
                   },
@@ -259,7 +261,7 @@ class _LoginPageState extends State<LoginPage> {
                 width: double.infinity,
                 // ユーザー登録ボタン
                 child: OutlinedButton(
-                  child: Text('ユーザー登録'),
+                  child: const Text('ユーザー登録'),
                   onPressed: () async {
                     try {
                       // メール/パスワードでユーザー登録
@@ -278,7 +280,7 @@ class _LoginPageState extends State<LoginPage> {
                     } catch (e) {
                       // ユーザー登録に失敗した場合
                       setState(() {
-                        infoText = "登録に失敗しました：${e.toString()}";
+                        infoText = '登録に失敗しました：${e.toString()}';
                       });
                     }
                   },
