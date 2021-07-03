@@ -10,7 +10,7 @@ Future<void> main() async {
 }
 
 class GustusApp extends StatelessWidget {
-  GustusApp() : super();
+  GustusApp({Key? key}) : super(key: key);
   final UserState userState = UserState();
 
   @override

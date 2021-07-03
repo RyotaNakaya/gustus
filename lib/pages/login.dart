@@ -14,6 +14,7 @@ class UserState extends ChangeNotifier {
 
 // ログイン画面用Widget
 class LoginPage extends StatefulWidget {
+  const LoginPage({Key? key}) : super(key: key);
   @override
   _LoginPageState createState() => _LoginPageState();
 }
@@ -76,7 +77,7 @@ class _LoginPageState extends State<LoginPage> {
                       // ログインに成功した場合
                       await Navigator.of(context).pushReplacement(
                         MaterialPageRoute(builder: (context) {
-                          return RankListPage();
+                          return const RankListPage();
                         }),
                       );
                     } catch (e) {
@@ -106,7 +107,7 @@ class _LoginPageState extends State<LoginPage> {
                       // ユーザー登録に成功した場合
                       await Navigator.of(context).pushReplacement(
                         MaterialPageRoute(builder: (context) {
-                          return RankListPage();
+                          return const RankListPage();
                         }),
                       );
                     } catch (e) {

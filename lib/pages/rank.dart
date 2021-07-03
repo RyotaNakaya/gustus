@@ -4,26 +4,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'login.dart';
 
-class GustusApp extends StatelessWidget {
-  GustusApp() : super();
-  final UserState userState = UserState();
-
-  @override
-  Widget build(BuildContext context) {
-    return ChangeNotifierProvider<UserState>(
-      create: (context) => UserState(),
-      child: MaterialApp(
-        title: 'Gustus App',
-        theme: ThemeData(
-          primarySwatch: Colors.blue,
-        ),
-        home: LoginPage(),
-      ),
-    );
-  }
-}
-
 class RankListPage extends StatefulWidget {
+  const RankListPage({Key? key}) : super(key: key);
   @override
   _RankListPageState createState() => _RankListPageState();
 }
@@ -61,7 +43,9 @@ class _RankListPageState extends State<RankListPage> {
                           Navigator.of(context).pushReplacement(
                             MaterialPageRoute(builder: (context) {
                               return RankContentsPage(
-                                  document.id, document['name']);
+                                rankId: document.id,
+                                rankName: document['name'],
+                              );
                             }),
                           );
                         },
@@ -96,7 +80,7 @@ class _RankListPageState extends State<RankListPage> {
         onPressed: () async {
           await Navigator.of(context)
               .push(MaterialPageRoute(builder: (context) {
-            return RankAddPage();
+            return const RankAddPage();
           }));
         },
         child: const Icon(Icons.add),
@@ -106,6 +90,7 @@ class _RankListPageState extends State<RankListPage> {
 }
 
 class RankAddPage extends StatefulWidget {
+  const RankAddPage({Key? key}) : super(key: key);
   @override
   _RankAddPageState createState() => _RankAddPageState();
 }
@@ -113,6 +98,7 @@ class RankAddPage extends StatefulWidget {
 class _RankAddPageState extends State<RankAddPage> {
   String _name = '';
 
+  @override
   Widget build(BuildContext context) {
     final UserState userState = Provider.of<UserState>(context);
     final User user = userState.user!;
@@ -179,14 +165,16 @@ class _RankAddPageState extends State<RankAddPage> {
 class RankContentsPage extends StatefulWidget {
   final String rankId;
   final String rankName;
-  // RankContentsPage({Key? rankId}) : super(key: rankId);
-  RankContentsPage(this.rankId, this.rankName);
+  const RankContentsPage(
+      {Key? key, required this.rankId, required this.rankName})
+      : super(key: key);
 
   @override
   _RankContentsPageState createState() => _RankContentsPageState();
 }
 
 class _RankContentsPageState extends State<RankContentsPage> {
+  @override
   Widget build(BuildContext context) {
     // final UserState userState = Provider.of<UserState>(context);
     // final User user = userState.user!;
