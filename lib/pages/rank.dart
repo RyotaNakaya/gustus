@@ -125,7 +125,7 @@ class _RankAddPageState extends State<RankAddPage> {
               },
             ),
             const SizedBox(height: 8),
-            Container(
+            SizedBox(
               width: double.infinity,
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
@@ -146,7 +146,7 @@ class _RankAddPageState extends State<RankAddPage> {
               ),
             ),
             const SizedBox(height: 8),
-            Container(
+            SizedBox(
               width: double.infinity,
               child: TextButton(
                 onPressed: () {

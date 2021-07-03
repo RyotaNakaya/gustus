@@ -60,7 +60,7 @@ class _LoginPageState extends State<LoginPage> {
                 // メッセージ表示
                 child: Text(infoText),
               ),
-              Container(
+              SizedBox(
                 width: double.infinity,
                 // ログイン登録ボタン
                 child: ElevatedButton(
@@ -90,7 +90,7 @@ class _LoginPageState extends State<LoginPage> {
                 ),
               ),
               const SizedBox(height: 8),
-              Container(
+              SizedBox(
                 width: double.infinity,
                 // ユーザー登録ボタン
                 child: OutlinedButton(
