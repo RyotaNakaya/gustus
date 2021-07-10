@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'pages/login.dart';
+import 'pages/rank.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -18,11 +19,16 @@ class GustusApp extends StatelessWidget {
     return ChangeNotifierProvider<UserState>(
       create: (context) => UserState(),
       child: MaterialApp(
-        title: 'Gustus App',
-        theme: ThemeData(
-          primarySwatch: Colors.blue,
-        ),
-        home: const LoginPage(),
+        title: 'Navigation with Routes',
+        initialRoute: '/',
+        routes: {
+          '/': (_) => const LoginPage(),
+          '/rank': (_) => const RankListPage(),
+          '/rank_content': (_) => const RankContentsPage(
+                rankId: '',
+                rankName: '',
+              ),
+        },
       ),
     );
   }

@@ -40,14 +40,11 @@ class _RankListPageState extends State<RankListPage> {
                       return InkWell(
                         // ランクコンテンツページに遷移
                         onTap: () {
-                          Navigator.of(context).pushReplacement(
-                            MaterialPageRoute(builder: (context) {
-                              return RankContentsPage(
-                                rankId: document.id,
-                                rankName: document['name'],
-                              );
-                            }),
-                          );
+                          Navigator.of(context).pushNamed('/rank_content',
+                              arguments: {
+                                'rankId': document.id,
+                                'rankName': document['name']
+                              });
                         },
                         child: Card(
                           child: ListTile(
