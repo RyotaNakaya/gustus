@@ -225,15 +225,98 @@ class _RankContentsPageState extends State<RankContentsPage> {
           ),
         ],
       ),
-      // floatingActionButton: FloatingActionButton(
-      //   onPressed: () async {
-      //     await Navigator.of(context)
-      //         .push(MaterialPageRoute(builder: (context) {
-      //       return RankAddPage();
-      //     }));
-      //   },
-      //   child: const Icon(Icons.add),
-      // ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () async {
+          await Navigator.of(context)
+              .push(MaterialPageRoute(builder: (context) {
+            return RankContentAddPage(rankId: widget.rankId);
+          }));
+        },
+        child: const Icon(Icons.add),
+      ),
+    );
+  }
+}
+
+class RankContentAddPage extends StatefulWidget {
+  final String rankId;
+  const RankContentAddPage({
+    Key? key,
+    required this.rankId,
+  }) : super(key: key);
+
+  @override
+  _RankContentAddPageState createState() => _RankContentAddPageState();
+}
+
+class _RankContentAddPageState extends State<RankContentAddPage> {
+  String _name = '';
+
+  @override
+  Widget build(BuildContext context) {
+    final UserState userState = Provider.of<UserState>(context);
+    final User user = userState.user!;
+
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('ランキングコンテンツ追加'),
+      ),
+      body: Container(
+        padding: const EdgeInsets.all(64),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            Text(
+              _name,
+              style: const TextStyle(color: Colors.blue),
+            ),
+            const SizedBox(height: 8),
+            TextField(
+              onChanged: (String value) {
+                setState(() {
+                  _name = value;
+                });
+              },
+            ),
+            const SizedBox(height: 8),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  primary: Colors.blue,
+                ),
+                onPressed: () async {
+                  final date = DateTime.now().toLocal().toIso8601String();
+                  final email = user.email;
+                  await FirebaseFirestore.instance
+                      .collection('rank_contents') // コレクションID指定
+                      .doc() // ドキュメントID自動生成
+                      .set({
+                    'rank_id': widget.rankId,
+                    'name': _name,
+                    'email': email,
+                    'date': date
+                  });
+                  // 1つ前の画面に戻る
+                  Navigator.of(context).pop();
+                },
+                child: const Text('ランキングコンテンツ追加',
+                    style: TextStyle(color: Colors.white)),
+              ),
+            ),
+            const SizedBox(height: 8),
+            SizedBox(
+              width: double.infinity,
+              child: TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+                child: const Text('キャンセル'),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
