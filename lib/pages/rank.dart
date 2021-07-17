@@ -175,6 +175,9 @@ class _RankContentsPageState extends State<RankContentsPage> {
   Widget build(BuildContext context) {
     // final UserState userState = Provider.of<UserState>(context);
     // final User user = userState.user!;
+    final args = ModalRoute.of(context)!.settings.arguments as Map;
+    final rankId = args['rankId'];
+    final rankName = args['rankName'];
 
     return Scaffold(
       appBar: AppBar(
@@ -182,15 +185,13 @@ class _RankContentsPageState extends State<RankContentsPage> {
       ),
       body: Column(
         children: <Widget>[
-          Text(widget.rankId),
-          Text(widget.rankName),
+          Text(rankName),
           Expanded(
             child: StreamBuilder<QuerySnapshot>(
               // TODO: 自分が登録したデータだけ fetch する
-              // TODO: rankId を元にランクコンテンツを取得する
               stream: FirebaseFirestore.instance
                   .collection('rank_contents')
-                  .orderBy('date')
+                  .where('rank_id', isEqualTo: rankId)
                   .snapshots(),
               builder: (context, snapshot) {
                 // データが取得できた場合
@@ -229,7 +230,7 @@ class _RankContentsPageState extends State<RankContentsPage> {
         onPressed: () async {
           await Navigator.of(context)
               .push(MaterialPageRoute(builder: (context) {
-            return RankContentAddPage(rankId: widget.rankId);
+            return RankContentAddPage(rankId: rankId);
           }));
         },
         child: const Icon(Icons.add),
