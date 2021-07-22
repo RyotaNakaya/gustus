@@ -37,9 +37,9 @@ class _RankListPageState extends State<RankListPage> {
                   return ListView(
                     children: documents.map((document) {
                       return InkWell(
-                        // ランクコンテンツページに遷移
+                        // ランクアイテムページに遷移
                         onTap: () {
-                          Navigator.of(context).pushNamed('/rank_content',
+                          Navigator.of(context).pushNamed('/rank_item',
                               arguments: {
                                 'rankId': document.id,
                                 'rankName': document['name']
@@ -158,18 +158,17 @@ class _RankAddPageState extends State<RankAddPage> {
   }
 }
 
-class RankContentsPage extends StatefulWidget {
+class RankItemsPage extends StatefulWidget {
   final String rankId;
   final String rankName;
-  const RankContentsPage(
-      {Key? key, required this.rankId, required this.rankName})
+  const RankItemsPage({Key? key, required this.rankId, required this.rankName})
       : super(key: key);
 
   @override
-  _RankContentsPageState createState() => _RankContentsPageState();
+  _RankItemsPageState createState() => _RankItemsPageState();
 }
 
-class _RankContentsPageState extends State<RankContentsPage> {
+class _RankItemsPageState extends State<RankItemsPage> {
   @override
   Widget build(BuildContext context) {
     final UserState userState = Provider.of<UserState>(context);
@@ -180,7 +179,7 @@ class _RankContentsPageState extends State<RankContentsPage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('ランキングコンテンツ一覧'),
+        title: const Text('ランキングアイテム一覧'),
       ),
       body: Column(
         children: <Widget>[
@@ -188,7 +187,7 @@ class _RankContentsPageState extends State<RankContentsPage> {
           Expanded(
             child: StreamBuilder<QuerySnapshot>(
               stream: FirebaseFirestore.instance
-                  .collection('rank_contents')
+                  .collection('rank_items')
                   .where('rank_id', isEqualTo: rankId)
                   .where('user_id', isEqualTo: user.uid)
                   .snapshots(),
@@ -206,7 +205,7 @@ class _RankContentsPageState extends State<RankContentsPage> {
                             icon: const Icon(Icons.delete),
                             onPressed: () async {
                               await FirebaseFirestore.instance
-                                  .collection('rank_contents')
+                                  .collection('rank_items')
                                   .doc(document.id)
                                   .delete();
                             },
@@ -229,7 +228,7 @@ class _RankContentsPageState extends State<RankContentsPage> {
         onPressed: () async {
           await Navigator.of(context)
               .push(MaterialPageRoute(builder: (context) {
-            return RankContentAddPage(rankId: rankId);
+            return RankItemAddPage(rankId: rankId);
           }));
         },
         child: const Icon(Icons.add),
@@ -238,18 +237,18 @@ class _RankContentsPageState extends State<RankContentsPage> {
   }
 }
 
-class RankContentAddPage extends StatefulWidget {
+class RankItemAddPage extends StatefulWidget {
   final String rankId;
-  const RankContentAddPage({
+  const RankItemAddPage({
     Key? key,
     required this.rankId,
   }) : super(key: key);
 
   @override
-  _RankContentAddPageState createState() => _RankContentAddPageState();
+  _RankItemAddPageState createState() => _RankItemAddPageState();
 }
 
-class _RankContentAddPageState extends State<RankContentAddPage> {
+class _RankItemAddPageState extends State<RankItemAddPage> {
   String _name = '';
 
   @override
@@ -259,7 +258,7 @@ class _RankContentAddPageState extends State<RankContentAddPage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('ランキングコンテンツ追加'),
+        title: const Text('ランキングアイテム追加'),
       ),
       body: Container(
         padding: const EdgeInsets.all(64),
@@ -288,7 +287,7 @@ class _RankContentAddPageState extends State<RankContentAddPage> {
                 onPressed: () async {
                   final date = DateTime.now().toLocal().toIso8601String();
                   await FirebaseFirestore.instance
-                      .collection('rank_contents') // コレクションID指定
+                      .collection('rank_items') // コレクションID指定
                       .doc() // ドキュメントID自動生成
                       .set({
                     'rank_id': widget.rankId,
@@ -299,7 +298,7 @@ class _RankContentAddPageState extends State<RankContentAddPage> {
                   // 1つ前の画面に戻る
                   Navigator.of(context).pop();
                 },
-                child: const Text('ランキングコンテンツ追加',
+                child: const Text('ランキングアイテム追加',
                     style: TextStyle(color: Colors.white)),
               ),
             ),

@@ -24,7 +24,7 @@ class GustusApp extends StatelessWidget {
         routes: {
           '/': (_) => const LoginPage(),
           '/rank': (_) => const RankListPage(),
-          '/rank_content': (_) => const RankContentsPage(
+          '/rank_item': (_) => const RankItemsPage(
                 rankId: '',
                 rankName: '',
               ),
