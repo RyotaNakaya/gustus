@@ -25,10 +25,9 @@ class _RankListPageState extends State<RankListPage> {
           Text(user.email.toString()),
           Expanded(
             child: StreamBuilder<QuerySnapshot>(
-              // TODO: 自分が登録したデータだけ fetch する
               stream: FirebaseFirestore.instance
                   .collection('ranks')
-                  .orderBy('date')
+                  .where('user_id', isEqualTo: user.uid)
                   .snapshots(),
               builder: (context, snapshot) {
                 // データが取得できた場合
@@ -134,7 +133,7 @@ class _RankAddPageState extends State<RankAddPage> {
                   await FirebaseFirestore.instance
                       .collection('ranks') // コレクションID指定
                       .doc() // ドキュメントID自動生成
-                      .set({'name': _name, 'email': email, 'date': date});
+                      .set({'name': _name, 'user_id': user.uid, 'date': date});
                   // 1つ前の画面に戻る
                   Navigator.of(context).pop();
                 },
@@ -173,8 +172,8 @@ class RankContentsPage extends StatefulWidget {
 class _RankContentsPageState extends State<RankContentsPage> {
   @override
   Widget build(BuildContext context) {
-    // final UserState userState = Provider.of<UserState>(context);
-    // final User user = userState.user!;
+    final UserState userState = Provider.of<UserState>(context);
+    final User user = userState.user!;
     final args = ModalRoute.of(context)!.settings.arguments as Map;
     final rankId = args['rankId'];
     final rankName = args['rankName'];
@@ -188,10 +187,10 @@ class _RankContentsPageState extends State<RankContentsPage> {
           Text(rankName),
           Expanded(
             child: StreamBuilder<QuerySnapshot>(
-              // TODO: 自分が登録したデータだけ fetch する
               stream: FirebaseFirestore.instance
                   .collection('rank_contents')
                   .where('rank_id', isEqualTo: rankId)
+                  .where('user_id', isEqualTo: user.uid)
                   .snapshots(),
               builder: (context, snapshot) {
                 // データが取得できた場合
@@ -288,14 +287,13 @@ class _RankContentAddPageState extends State<RankContentAddPage> {
                 ),
                 onPressed: () async {
                   final date = DateTime.now().toLocal().toIso8601String();
-                  final email = user.email;
                   await FirebaseFirestore.instance
                       .collection('rank_contents') // コレクションID指定
                       .doc() // ドキュメントID自動生成
                       .set({
                     'rank_id': widget.rankId,
                     'name': _name,
-                    'email': email,
+                    'user_id': user.uid,
                     'date': date
                   });
                   // 1つ前の画面に戻る
