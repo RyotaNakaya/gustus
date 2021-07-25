@@ -1,7 +1,9 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
+
+import 'common/header.dart';
 import 'login.dart';
 
 class RankListPage extends StatefulWidget {
@@ -17,9 +19,7 @@ class _RankListPageState extends State<RankListPage> {
     final User user = userState.user!;
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('ランキング一覧'),
-      ),
+      appBar: const Header(text: 'ランキング一覧'),
       body: Column(
         children: <Widget>[
           Text(user.email.toString()),
@@ -100,9 +100,7 @@ class _RankAddPageState extends State<RankAddPage> {
     final User user = userState.user!;
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('ランキング追加'),
-      ),
+      appBar: const Header(text: 'ランキング追加'),
       body: Container(
         padding: const EdgeInsets.all(64),
         child: Column(
@@ -178,9 +176,7 @@ class _RankItemsPageState extends State<RankItemsPage> {
     final rankName = args['rankName'];
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('ランキングアイテム一覧'),
-      ),
+      appBar: const Header(text: 'ランキングアイテム一覧'),
       body: Column(
         children: <Widget>[
           Text(rankName),
@@ -257,9 +253,7 @@ class _RankItemAddPageState extends State<RankItemAddPage> {
     final User user = userState.user!;
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('ランキングアイテム追加'),
-      ),
+      appBar: const Header(text: 'ランキングアイテム追加'),
       body: Container(
         padding: const EdgeInsets.all(64),
         child: Column(
