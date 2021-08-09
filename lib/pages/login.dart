@@ -10,6 +10,10 @@ class UserState extends ChangeNotifier {
     user = newUser;
     notifyListeners();
   }
+
+  void unsetUser() {
+    user = null;
+  }
 }
 
 // ログイン画面用Widget

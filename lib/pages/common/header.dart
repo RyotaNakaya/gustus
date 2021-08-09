@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:gustus/pages/login.dart';
+import 'package:provider/provider.dart';
 
 class Header extends StatelessWidget with PreferredSizeWidget {
   final String text;
@@ -24,12 +27,18 @@ class Header extends StatelessWidget with PreferredSizeWidget {
           },
           onSelected: (result) {
             if (result == 0) {
-              // TODO: サインアウトの実装
-              // signOut(context);
+              signOut(context);
             }
           },
         ),
       ],
     );
   }
+}
+
+Future<void> signOut(BuildContext context) async {
+  final UserState userState = Provider.of<UserState>(context, listen: false);
+  await FirebaseAuth.instance.signOut();
+  userState.unsetUser();
+  Navigator.of(context).pushNamed('/');
 }
