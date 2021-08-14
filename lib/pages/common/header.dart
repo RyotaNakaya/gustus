@@ -12,6 +12,7 @@ class Header extends StatelessWidget with PreferredSizeWidget {
 
   @override
   Widget build(BuildContext context) {
+    final UserState userState = Provider.of<UserState>(context);
     return AppBar(
       title: Text(text),
       actions: [
@@ -27,7 +28,7 @@ class Header extends StatelessWidget with PreferredSizeWidget {
           },
           onSelected: (result) {
             if (result == 0) {
-              signOut(context);
+              signOut(context, userState);
             }
           },
         ),
@@ -36,9 +37,8 @@ class Header extends StatelessWidget with PreferredSizeWidget {
   }
 }
 
-Future<void> signOut(BuildContext context) async {
-  final UserState userState = Provider.of<UserState>(context, listen: false);
+Future<void> signOut(BuildContext context, UserState userState) async {
   await FirebaseAuth.instance.signOut();
   userState.unsetUser();
-  Navigator.of(context).pushNamed('/');
+  Navigator.of(context).pushNamedAndRemoveUntil('/', (_) => false);
 }
