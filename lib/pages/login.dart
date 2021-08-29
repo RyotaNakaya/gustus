@@ -33,6 +33,16 @@ class _LoginPageState extends State<LoginPage> {
   @override
   Widget build(BuildContext context) {
     final UserState userState = Provider.of<UserState>(context);
+    // ログインしている場合はランクページに飛ばす
+    if (userState.user != null) {
+      Future(() async {
+        await Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (context) {
+            return const RankListPage();
+          }),
+        );
+      });
+    }
     return Scaffold(
       body: Center(
         child: Container(
