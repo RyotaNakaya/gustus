@@ -39,11 +39,12 @@ class _RankListPageState extends State<RankListPage> {
                       return InkWell(
                         // ランクアイテムページに遷移
                         onTap: () {
-                          Navigator.of(context).pushNamed('/rank_item',
-                              arguments: {
-                                'rankId': document.id,
-                                'rankName': document['name']
-                              });
+                          Navigator.of(context)
+                              .pushNamed('/rank_item', arguments: {
+                            'rankId': document.id,
+                            'rankName': document['name'],
+                            'order': document['rank_item_order']
+                          });
                         },
                         child: Card(
                           child: ListTile(
@@ -159,7 +160,12 @@ class _RankAddPageState extends State<RankAddPage> {
 class RankItemsPage extends StatefulWidget {
   final String rankId;
   final String rankName;
-  const RankItemsPage({Key? key, required this.rankId, required this.rankName})
+  final List<String> order;
+  const RankItemsPage(
+      {Key? key,
+      required this.rankId,
+      required this.rankName,
+      required this.order})
       : super(key: key);
 
   @override
@@ -174,6 +180,7 @@ class _RankItemsPageState extends State<RankItemsPage> {
     final args = ModalRoute.of(context)!.settings.arguments as Map;
     final rankId = args['rankId'];
     final rankName = args['rankName'];
+    final order = args['order'];
 
     return Scaffold(
       appBar: const Header(text: 'ランキングアイテム一覧'),
@@ -192,22 +199,29 @@ class _RankItemsPageState extends State<RankItemsPage> {
                 if (snapshot.hasData) {
                   final List<DocumentSnapshot> documents = snapshot.data!.docs;
                   // 取得した一覧を元にリスト表示
+                  // FIXME: ダブルループしてしまうのが微妙
                   return ListView(
-                    children: documents.map((document) {
-                      return Card(
-                        child: ListTile(
-                          title: Text(document['name']),
-                          trailing: IconButton(
-                            icon: const Icon(Icons.delete),
-                            onPressed: () async {
-                              await FirebaseFirestore.instance
-                                  .collection('rank_items')
-                                  .doc(document.id)
-                                  .delete();
-                            },
-                          ),
-                        ),
-                      );
+                    children: order.map<Widget>((id) {
+                      var card = Card();
+                      for (final document in documents) {
+                        if (id == document.id) {
+                          card = Card(
+                            child: ListTile(
+                              title: Text(document['name']),
+                              trailing: IconButton(
+                                icon: const Icon(Icons.delete),
+                                onPressed: () async {
+                                  await FirebaseFirestore.instance
+                                      .collection('rank_items')
+                                      .doc(document.id)
+                                      .delete();
+                                },
+                              ),
+                            ),
+                          );
+                        }
+                      }
+                      return card;
                     }).toList(),
                   );
                 }
