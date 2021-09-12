@@ -132,7 +132,12 @@ class _RankAddPageState extends State<RankAddPage> {
                   await FirebaseFirestore.instance
                       .collection('ranks') // コレクションID指定
                       .doc() // ドキュメントID自動生成
-                      .set({'name': _name, 'user_id': user.uid, 'date': date});
+                      .set({
+                    'name': _name,
+                    'user_id': user.uid,
+                    'date': date,
+                    'rank_item_order': []
+                  });
                   // 1つ前の画面に戻る
                   Navigator.of(context).pop();
                 },
@@ -160,7 +165,7 @@ class _RankAddPageState extends State<RankAddPage> {
 class RankItemsPage extends StatefulWidget {
   final String rankId;
   final String rankName;
-  final List<String> order;
+  final List order;
   const RankItemsPage(
       {Key? key,
       required this.rankId,
@@ -294,15 +299,26 @@ class _RankItemAddPageState extends State<RankItemAddPage> {
                 ),
                 onPressed: () async {
                   final date = DateTime.now().toLocal().toIso8601String();
-                  await FirebaseFirestore.instance
+                  final firestoreInstance = FirebaseFirestore.instance;
+                  // TODO: pop して一覧に戻ったときに追加された要素が表示されない
+                  final ref = await firestoreInstance
                       .collection('rank_items') // コレクションID指定
-                      .doc() // ドキュメントID自動生成
-                      .set({
+                      .add({
                     'rank_id': widget.rankId,
                     'name': _name,
                     'user_id': user.uid,
                     'date': date
                   });
+                  final ranks = await firestoreInstance
+                      .collection('ranks')
+                      .doc(widget.rankId)
+                      .get();
+                  final order = ranks['rank_item_order'];
+                  order.add(ref.id);
+                  await firestoreInstance
+                      .collection('ranks')
+                      .doc(widget.rankId)
+                      .update({'rank_item_order': order});
                   // 1つ前の画面に戻る
                   Navigator.of(context).pop();
                 },
