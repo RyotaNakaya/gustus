@@ -165,12 +165,7 @@ class _RankAddPageState extends State<RankAddPage> {
 class RankItemsPage extends StatefulWidget {
   final String rankId;
   final String rankName;
-  final List order;
-  const RankItemsPage(
-      {Key? key,
-      required this.rankId,
-      required this.rankName,
-      required this.order})
+  const RankItemsPage({Key? key, required this.rankId, required this.rankName})
       : super(key: key);
 
   @override
@@ -185,7 +180,6 @@ class _RankItemsPageState extends State<RankItemsPage> {
     final args = ModalRoute.of(context)!.settings.arguments as Map;
     final rankId = args['rankId'];
     final rankName = args['rankName'];
-    final order = args['order'];
 
     return Scaffold(
       appBar: const Header(text: 'ランキングアイテム一覧'),
@@ -193,50 +187,73 @@ class _RankItemsPageState extends State<RankItemsPage> {
         children: <Widget>[
           Text(rankName),
           Expanded(
-            child: StreamBuilder<QuerySnapshot>(
-              stream: FirebaseFirestore.instance
-                  .collection('rank_items')
-                  .where('rank_id', isEqualTo: rankId)
-                  .where('user_id', isEqualTo: user.uid)
-                  .snapshots(),
-              builder: (context, snapshot) {
-                // データが取得できた場合
-                if (snapshot.hasData) {
-                  final List<DocumentSnapshot> documents = snapshot.data!.docs;
-                  // 取得した一覧を元にリスト表示
-                  // FIXME: ダブルループしてしまうのが微妙
-                  return ListView(
-                    children: order.map<Widget>((id) {
-                      var card = Card();
-                      for (final document in documents) {
-                        if (id == document.id) {
-                          card = Card(
-                            child: ListTile(
-                              title: Text(document['name']),
-                              trailing: IconButton(
-                                icon: const Icon(Icons.delete),
-                                onPressed: () async {
-                                  await FirebaseFirestore.instance
-                                      .collection('rank_items')
-                                      .doc(document.id)
-                                      .delete();
-                                },
-                              ),
-                            ),
-                          );
+              child: StreamBuilder<QuerySnapshot>(
+                  stream: FirebaseFirestore.instance
+                      .collection('ranks')
+                      .where('user_id', isEqualTo: user.uid)
+                      .snapshots(),
+                  builder: (context, rankSnapshot) {
+                    if (rankSnapshot.hasData) {
+                      List order = [];
+                      final List<DocumentSnapshot> documents =
+                          rankSnapshot.data!.docs;
+                      // rankId の一致するドキュメントを抽出するのだけど、これもうちょいどうにかならのか
+                      for (final doc in documents) {
+                        if (doc.id == rankId) {
+                          order = doc['rank_item_order'];
+                          break;
                         }
                       }
-                      return card;
-                    }).toList(),
-                  );
-                }
-                // データが読込中の場合
-                return const Center(
-                  child: Text('読込中...'),
-                );
-              },
-            ),
-          ),
+                      return StreamBuilder<QuerySnapshot>(
+                        stream: FirebaseFirestore.instance
+                            .collection('rank_items')
+                            .where('rank_id', isEqualTo: rankId)
+                            .where('user_id', isEqualTo: user.uid)
+                            .snapshots(),
+                        builder: (context, itemSnapshot) {
+                          // データが取得できた場合
+                          if (itemSnapshot.hasData) {
+                            final List<DocumentSnapshot> documents =
+                                itemSnapshot.data!.docs;
+                            // 取得した一覧を元にリスト表示
+                            // FIXME: ダブルループしてしまうのが微妙
+                            return ListView(
+                              children: order.map<Widget>((id) {
+                                var card = Card();
+                                for (final document in documents) {
+                                  if (id == document.id) {
+                                    card = Card(
+                                      child: ListTile(
+                                        title: Text(document['name']),
+                                        trailing: IconButton(
+                                          icon: const Icon(Icons.delete),
+                                          onPressed: () async {
+                                            await FirebaseFirestore.instance
+                                                .collection('rank_items')
+                                                .doc(document.id)
+                                                .delete();
+                                          },
+                                        ),
+                                      ),
+                                    );
+                                  }
+                                }
+                                return card;
+                              }).toList(),
+                            );
+                          }
+                          // データが読込中の場合
+                          return const Center(
+                            child: Text('読込中...'),
+                          );
+                        },
+                      );
+                    }
+                    // データが読込中の場合
+                    return const Center(
+                      child: Text('読込中...'),
+                    );
+                  })),
         ],
       ),
       floatingActionButton: FloatingActionButton(
@@ -300,7 +317,6 @@ class _RankItemAddPageState extends State<RankItemAddPage> {
                 onPressed: () async {
                   final date = DateTime.now().toLocal().toIso8601String();
                   final firestoreInstance = FirebaseFirestore.instance;
-                  // TODO: pop して一覧に戻ったときに追加された要素が表示されない
                   final ref = await firestoreInstance
                       .collection('rank_items') // コレクションID指定
                       .add({

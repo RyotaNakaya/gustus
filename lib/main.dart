@@ -27,7 +27,6 @@ class GustusApp extends StatelessWidget {
           '/rank_item': (_) => const RankItemsPage(
                 rankId: '',
                 rankName: '',
-                order: [],
               ),
         },
       ),
