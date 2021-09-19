@@ -113,6 +113,7 @@ class _RankAddPageState extends State<RankAddPage> {
             ),
             const SizedBox(height: 8),
             TextField(
+              // TODO: 必須バリデーション
               onChanged: (String value) {
                 setState(() {
                   _name = value;

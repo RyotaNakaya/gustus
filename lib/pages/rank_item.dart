@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
 import 'common/header.dart';
@@ -148,6 +149,7 @@ class RankItemAddPage extends StatefulWidget {
 
 class _RankItemAddPageState extends State<RankItemAddPage> {
   String _name = '';
+  int _targetOrder = 0;
 
   @override
   Widget build(BuildContext context) {
@@ -165,14 +167,27 @@ class _RankItemAddPageState extends State<RankItemAddPage> {
               _name,
               style: const TextStyle(color: Colors.blue),
             ),
-            const SizedBox(height: 8),
             TextField(
+              // TODO: 必須バリデーション
+              decoration: const InputDecoration(labelText: 'Enter  name'),
               onChanged: (String value) {
                 setState(() {
                   _name = value;
                 });
               },
             ),
+            TextField(
+              decoration: const InputDecoration(labelText: 'Enter order'),
+              keyboardType: TextInputType.number,
+              // TODO: 指定可能範囲は 1 ~ item 数までとする
+              inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+              onChanged: (String value) {
+                setState(() {
+                  _targetOrder = int.parse(value);
+                });
+              },
+            ),
+            const SizedBox(height: 8),
             const SizedBox(height: 8),
             SizedBox(
               width: double.infinity,
@@ -196,7 +211,12 @@ class _RankItemAddPageState extends State<RankItemAddPage> {
                       .doc(widget.rankId)
                       .get();
                   final order = ranks['rank_item_order'];
-                  order.add(ref.id);
+                  if (_targetOrder == 0) {
+                    order.add(ref.id);
+                  } else {
+                    // array index が 0 start なのでマイナス1する
+                    order.insert(_targetOrder - 1, ref.id);
+                  }
                   await firestoreInstance
                       .collection('ranks')
                       .doc(widget.rankId)
