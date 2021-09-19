@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'pages/login.dart';
 import 'pages/rank.dart';
+import 'pages/rank_item.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
