@@ -128,7 +128,6 @@ class _RankAddPageState extends State<RankAddPage> {
                 ),
                 onPressed: () async {
                   final date = DateTime.now().toLocal().toIso8601String();
-                  final email = user.email;
                   await FirebaseFirestore.instance
                       .collection('ranks') // コレクションID指定
                       .doc() // ドキュメントID自動生成
