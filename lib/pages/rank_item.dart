@@ -72,10 +72,32 @@ class _RankItemsPageState extends State<RankItemsPage> {
                                         trailing: IconButton(
                                           icon: const Icon(Icons.delete),
                                           onPressed: () async {
-                                            await FirebaseFirestore.instance
+                                            final firestoreInstance =
+                                                FirebaseFirestore.instance;
+                                            await firestoreInstance
                                                 .collection('rank_items')
                                                 .doc(document.id)
                                                 .delete();
+                                            final ranks =
+                                                await firestoreInstance
+                                                    .collection('ranks')
+                                                    .doc(rankId)
+                                                    .get();
+                                            final order =
+                                                ranks['rank_item_order'];
+                                            // 削除対象の item_id を order から削除する
+                                            for (var i = 0;
+                                                i < order.length;
+                                                i++) {
+                                              if (order[i] == document.id) {
+                                                order.removeAt(i);
+                                              }
+                                            }
+                                            await firestoreInstance
+                                                .collection('ranks')
+                                                .doc(rankId)
+                                                .update(
+                                                    {'rank_item_order': order});
                                           },
                                         ),
                                       ),
