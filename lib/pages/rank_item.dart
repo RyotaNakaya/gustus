@@ -62,52 +62,52 @@ class _RankItemsPageState extends State<RankItemsPage> {
                                 itemSnapshot.data!.docs;
                             // 取得した一覧を元にリスト表示
                             // FIXME: ダブルループしてしまうのが微妙
-                            return ListView(
-                              children: order.map<Widget>((id) {
-                                var card = Card();
-                                for (final document in documents) {
-                                  if (id == document.id) {
-                                    card = Card(
-                                      child: ListTile(
-                                        title: Text(document['name']),
-                                        trailing: IconButton(
-                                          icon: const Icon(Icons.delete),
-                                          onPressed: () async {
-                                            final firestoreInstance =
-                                                FirebaseFirestore.instance;
-                                            await firestoreInstance
-                                                .collection('rank_items')
-                                                .doc(document.id)
-                                                .delete();
-                                            final ranks =
-                                                await firestoreInstance
-                                                    .collection('ranks')
-                                                    .doc(rankId)
-                                                    .get();
-                                            final order =
-                                                ranks['rank_item_order'];
-                                            // 削除対象の item_id を order から削除する
-                                            for (var i = 0;
-                                                i < order.length;
-                                                i++) {
-                                              if (order[i] == document.id) {
-                                                order.removeAt(i);
-                                              }
+                            final list = <Widget>[];
+                            order.asMap().forEach((idx, id) {
+                              var card = Card();
+                              for (final document in documents) {
+                                if (id == document.id) {
+                                  card = Card(
+                                    child: ListTile(
+                                      leading: Text('${idx + 1}位'),
+                                      title: Text(document['name']),
+                                      trailing: IconButton(
+                                        icon: const Icon(Icons.delete),
+                                        onPressed: () async {
+                                          final firestoreInstance =
+                                              FirebaseFirestore.instance;
+                                          await firestoreInstance
+                                              .collection('rank_items')
+                                              .doc(document.id)
+                                              .delete();
+                                          final ranks = await firestoreInstance
+                                              .collection('ranks')
+                                              .doc(rankId)
+                                              .get();
+                                          final order =
+                                              ranks['rank_item_order'];
+                                          // 削除対象の item_id を order から削除する
+                                          for (var i = 0;
+                                              i < order.length;
+                                              i++) {
+                                            if (order[i] == document.id) {
+                                              order.removeAt(i);
                                             }
-                                            await firestoreInstance
-                                                .collection('ranks')
-                                                .doc(rankId)
-                                                .update(
-                                                    {'rank_item_order': order});
-                                          },
-                                        ),
+                                          }
+                                          await firestoreInstance
+                                              .collection('ranks')
+                                              .doc(rankId)
+                                              .update(
+                                                  {'rank_item_order': order});
+                                        },
                                       ),
-                                    );
-                                  }
+                                    ),
+                                  );
                                 }
-                                return card;
-                              }).toList(),
-                            );
+                              }
+                              list.add(card);
+                            });
+                            return ListView(children: list);
                           }
                           // データが読込中の場合
                           return const Center(
