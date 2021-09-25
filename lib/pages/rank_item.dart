@@ -25,6 +25,7 @@ class _RankItemsPageState extends State<RankItemsPage> {
     final args = ModalRoute.of(context)!.settings.arguments as Map;
     final rankId = args['rankId'];
     final rankName = args['rankName'];
+    var itemLength = 1;
 
     return Scaffold(
       appBar: const Header(text: 'ランキングアイテム一覧'),
@@ -60,6 +61,7 @@ class _RankItemsPageState extends State<RankItemsPage> {
                           if (itemSnapshot.hasData) {
                             final List<DocumentSnapshot> documents =
                                 itemSnapshot.data!.docs;
+                            itemLength = documents.length;
                             // 取得した一覧を元にリスト表示
                             // FIXME: ダブルループしてしまうのが微妙
                             final list = <Widget>[];
@@ -127,7 +129,7 @@ class _RankItemsPageState extends State<RankItemsPage> {
         onPressed: () async {
           await Navigator.of(context)
               .push(MaterialPageRoute(builder: (context) {
-            return RankItemAddPage(rankId: rankId);
+            return RankItemAddPage(rankId: rankId, itemLength: itemLength);
           }));
         },
         child: const Icon(Icons.add),
@@ -138,9 +140,11 @@ class _RankItemsPageState extends State<RankItemsPage> {
 
 class RankItemAddPage extends StatefulWidget {
   final String rankId;
+  final int itemLength;
   const RankItemAddPage({
     Key? key,
     required this.rankId,
+    required this.itemLength,
   }) : super(key: key);
 
   @override
@@ -150,6 +154,7 @@ class RankItemAddPage extends StatefulWidget {
 class _RankItemAddPageState extends State<RankItemAddPage> {
   String _name = '';
   int _targetOrder = 0;
+  final _formKey = GlobalKey<FormState>();
 
   @override
   Widget build(BuildContext context) {
@@ -160,85 +165,105 @@ class _RankItemAddPageState extends State<RankItemAddPage> {
       appBar: const Header(text: 'ランキングアイテム追加'),
       body: Container(
         padding: const EdgeInsets.all(64),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            Text(
-              _name,
-              style: const TextStyle(color: Colors.blue),
-            ),
-            TextField(
-              // TODO: 必須バリデーション
-              decoration: const InputDecoration(labelText: 'Enter  name'),
-              onChanged: (String value) {
-                setState(() {
-                  _name = value;
-                });
-              },
-            ),
-            TextField(
-              decoration: const InputDecoration(labelText: 'Enter order'),
-              keyboardType: TextInputType.number,
-              // TODO: 指定可能範囲は 1 ~ item 数までとする
-              inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-              onChanged: (String value) {
-                setState(() {
-                  _targetOrder = int.parse(value);
-                });
-              },
-            ),
-            const SizedBox(height: 8),
-            const SizedBox(height: 8),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  primary: Colors.blue,
-                ),
-                onPressed: () async {
-                  final date = DateTime.now().toLocal().toIso8601String();
-                  final firestoreInstance = FirebaseFirestore.instance;
-                  final ref = await firestoreInstance
-                      .collection('rank_items') // コレクションID指定
-                      .add({
-                    'rank_id': widget.rankId,
-                    'name': _name,
-                    'user_id': user.uid,
-                    'date': date
+        child: Form(
+          key: _formKey,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+              Text(
+                _name,
+                style: const TextStyle(color: Colors.blue),
+              ),
+              TextFormField(
+                // TODO: 必須バリデーション
+                decoration: const InputDecoration(labelText: 'Enter  name'),
+                onChanged: (String value) {
+                  setState(() {
+                    _name = value;
                   });
-                  final ranks = await firestoreInstance
-                      .collection('ranks')
-                      .doc(widget.rankId)
-                      .get();
-                  final order = ranks['rank_item_order'];
-                  if (_targetOrder == 0) {
-                    order.add(ref.id);
-                  } else {
-                    // array index が 0 start なのでマイナス1する
-                    order.insert(_targetOrder - 1, ref.id);
+                },
+              ),
+              TextFormField(
+                decoration: const InputDecoration(labelText: 'Enter order'),
+                keyboardType: TextInputType.number,
+                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                autovalidateMode: AutovalidateMode.onUserInteraction,
+                validator: (value) {
+                  final max = widget.itemLength + 1;
+                  if (value!.isNotEmpty) {
+                    if (int.parse(value) > max) {
+                      return '最下位は$max位です。';
+                    }
+                    if (int.parse(value) == 0) {
+                      return '0 は入力できません。';
+                    }
                   }
-                  await firestoreInstance
-                      .collection('ranks')
-                      .doc(widget.rankId)
-                      .update({'rank_item_order': order});
-                  // 1つ前の画面に戻る
-                  Navigator.of(context).pop();
                 },
-                child: const Text('ランキングアイテム追加',
-                    style: TextStyle(color: Colors.white)),
-              ),
-            ),
-            const SizedBox(height: 8),
-            SizedBox(
-              width: double.infinity,
-              child: TextButton(
-                onPressed: () {
-                  Navigator.of(context).pop();
+                onChanged: (String value) {
+                  setState(() {
+                    _targetOrder = int.parse(value);
+                  });
                 },
-                child: const Text('キャンセル'),
               ),
-            ),
-          ],
+              const SizedBox(height: 8),
+              const SizedBox(height: 8),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    primary: Colors.blue,
+                  ),
+                  onPressed: () async {
+                    if (_formKey.currentState!.validate()) {
+                      final date = DateTime.now().toLocal().toIso8601String();
+                      final firestoreInstance = FirebaseFirestore.instance;
+                      final ref = await firestoreInstance
+                          .collection('rank_items') // コレクションID指定
+                          .add({
+                        'rank_id': widget.rankId,
+                        'name': _name,
+                        'user_id': user.uid,
+                        'date': date
+                      });
+                      final ranks = await firestoreInstance
+                          .collection('ranks')
+                          .doc(widget.rankId)
+                          .get();
+                      final order = ranks['rank_item_order'];
+                      if (_targetOrder == 0) {
+                        order.add(ref.id);
+                      } else {
+                        // array index が 0 start なのでマイナス1する
+                        order.insert(_targetOrder - 1, ref.id);
+                      }
+                      await firestoreInstance
+                          .collection('ranks')
+                          .doc(widget.rankId)
+                          .update({'rank_item_order': order});
+                      // 1つ前の画面に戻る
+                      Navigator.of(context).pop();
+                    } else {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('エラーを解消してください。')),
+                      );
+                    }
+                  },
+                  child: const Text('ランキングアイテム追加',
+                      style: TextStyle(color: Colors.white)),
+                ),
+              ),
+              const SizedBox(height: 8),
+              SizedBox(
+                width: double.infinity,
+                child: TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                  child: const Text('キャンセル'),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
