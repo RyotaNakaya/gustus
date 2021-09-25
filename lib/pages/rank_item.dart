@@ -179,7 +179,7 @@ class _RankItemAddPageState extends State<RankItemAddPage> {
                 decoration: const InputDecoration(labelText: 'Enter name'),
                 autovalidateMode: AutovalidateMode.onUserInteraction,
                 validator: (value) {
-                  final res = validateName(value!);
+                  final res = NameValidator.validate(value!);
                   if (res != '') {
                     return res;
                   }
