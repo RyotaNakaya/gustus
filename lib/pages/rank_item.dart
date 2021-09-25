@@ -171,10 +171,6 @@ class _RankItemAddPageState extends State<RankItemAddPage> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
-              Text(
-                _name,
-                style: const TextStyle(color: Colors.blue),
-              ),
               TextFormField(
                 decoration: const InputDecoration(labelText: 'Enter name'),
                 autovalidateMode: AutovalidateMode.onUserInteraction,
