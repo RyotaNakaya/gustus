@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
 import 'common/header.dart';
+import 'common/validator.dart';
 import 'login.dart';
 
 class RankItemsPage extends StatefulWidget {
@@ -175,8 +176,14 @@ class _RankItemAddPageState extends State<RankItemAddPage> {
                 style: const TextStyle(color: Colors.blue),
               ),
               TextFormField(
-                // TODO: 必須バリデーション
-                decoration: const InputDecoration(labelText: 'Enter  name'),
+                decoration: const InputDecoration(labelText: 'Enter name'),
+                autovalidateMode: AutovalidateMode.onUserInteraction,
+                validator: (value) {
+                  final res = validateName(value!);
+                  if (res != '') {
+                    return res;
+                  }
+                },
                 onChanged: (String value) {
                   setState(() {
                     _name = value;
