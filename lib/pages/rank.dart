@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import 'common/header.dart';
+import 'common/validator.dart';
 import 'login.dart';
 
 class RankListPage extends StatefulWidget {
@@ -94,6 +95,7 @@ class RankAddPage extends StatefulWidget {
 
 class _RankAddPageState extends State<RankAddPage> {
   String _name = '';
+  final _formKey = GlobalKey<FormState>();
 
   @override
   Widget build(BuildContext context) {
@@ -104,54 +106,69 @@ class _RankAddPageState extends State<RankAddPage> {
       appBar: const Header(text: 'ランキング追加'),
       body: Container(
         padding: const EdgeInsets.all(64),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            const SizedBox(height: 8),
-            TextField(
-              // TODO: 必須バリデーション
-              onChanged: (String value) {
-                setState(() {
-                  _name = value;
-                });
-              },
-            ),
-            const SizedBox(height: 8),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  primary: Colors.blue,
-                ),
-                onPressed: () async {
-                  final date = DateTime.now().toLocal().toIso8601String();
-                  await FirebaseFirestore.instance
-                      .collection('ranks') // コレクションID指定
-                      .doc() // ドキュメントID自動生成
-                      .set({
-                    'name': _name,
-                    'user_id': user.uid,
-                    'date': date,
-                    'rank_item_order': []
+        child: Form(
+          key: _formKey,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+              const SizedBox(height: 8),
+              TextFormField(
+                autovalidateMode: AutovalidateMode.onUserInteraction,
+                validator: (value) {
+                  final res = NameValidator.validate(value!);
+                  if (res != '') {
+                    return res;
+                  }
+                },
+                onChanged: (String value) {
+                  setState(() {
+                    _name = value;
                   });
-                  // 1つ前の画面に戻る
-                  Navigator.of(context).pop();
                 },
-                child: const Text('ランキング追加',
-                    style: TextStyle(color: Colors.white)),
               ),
-            ),
-            const SizedBox(height: 8),
-            SizedBox(
-              width: double.infinity,
-              child: TextButton(
-                onPressed: () {
-                  Navigator.of(context).pop();
-                },
-                child: const Text('キャンセル'),
+              const SizedBox(height: 8),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    primary: Colors.blue,
+                  ),
+                  onPressed: () async {
+                    if (_formKey.currentState!.validate()) {
+                      final date = DateTime.now().toLocal().toIso8601String();
+                      await FirebaseFirestore.instance
+                          .collection('ranks') // コレクションID指定
+                          .doc() // ドキュメントID自動生成
+                          .set({
+                        'name': _name,
+                        'user_id': user.uid,
+                        'date': date,
+                        'rank_item_order': []
+                      });
+                      // 1つ前の画面に戻る
+                      Navigator.of(context).pop();
+                    } else {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('入力値が不正です。')),
+                      );
+                    }
+                  },
+                  child: const Text('ランキング追加',
+                      style: TextStyle(color: Colors.white)),
+                ),
               ),
-            ),
-          ],
+              const SizedBox(height: 8),
+              SizedBox(
+                width: double.infinity,
+                child: TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                  child: const Text('キャンセル'),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

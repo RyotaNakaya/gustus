@@ -247,7 +247,7 @@ class _RankItemAddPageState extends State<RankItemAddPage> {
                       Navigator.of(context).pop();
                     } else {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('エラーを解消してください。')),
+                        const SnackBar(content: Text('入力値が不正です。')),
                       );
                     }
                   },
