@@ -47,20 +47,8 @@ class _RankListPageState extends State<RankListPage> {
                             'order': document['rank_item_order']
                           });
                         },
-                        child: Card(
-                          child: ListTile(
-                            title: Text(document['name']),
-                            trailing: IconButton(
-                              icon: const Icon(Icons.delete),
-                              onPressed: () async {
-                                await FirebaseFirestore.instance
-                                    .collection('ranks')
-                                    .doc(document.id)
-                                    .delete();
-                              },
-                            ),
-                          ),
-                        ),
+                        child:
+                            RankCard(id: document.id, name: document['name']),
                       );
                     }).toList(),
                   );
@@ -169,6 +157,36 @@ class _RankAddPageState extends State<RankAddPage> {
               ),
             ],
           ),
+        ),
+      ),
+    );
+  }
+}
+
+class RankCard extends StatefulWidget {
+  final String id;
+  final String name;
+  const RankCard({Key? key, required this.id, required this.name})
+      : super(key: key);
+
+  @override
+  _RankCardState createState() => _RankCardState();
+}
+
+class _RankCardState extends State<RankCard> {
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      child: ListTile(
+        title: Text(widget.name),
+        trailing: IconButton(
+          icon: const Icon(Icons.delete),
+          onPressed: () async {
+            await FirebaseFirestore.instance
+                .collection('ranks')
+                .doc(widget.id)
+                .delete();
+          },
         ),
       ),
     );
