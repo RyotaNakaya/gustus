@@ -174,19 +174,42 @@ class RankCard extends StatefulWidget {
 }
 
 class _RankCardState extends State<RankCard> {
+  bool _isEditing = false;
+  void _changeIsEditing(bool e) => setState(() => _isEditing = e);
+
   @override
   Widget build(BuildContext context) {
     return Card(
       child: ListTile(
-        title: Text(widget.name),
-        trailing: IconButton(
-          icon: const Icon(Icons.delete),
-          onPressed: () async {
-            await FirebaseFirestore.instance
-                .collection('ranks')
-                .doc(widget.id)
-                .delete();
-          },
+        title: _isEditing ? const TextField() : Text(widget.name),
+        trailing: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (_isEditing)
+              IconButton(
+                icon: const Icon(Icons.check),
+                onPressed: () {
+                  // TODO: 変更後のネームを永続化する
+                  _changeIsEditing(false);
+                },
+              )
+            else
+              IconButton(
+                icon: const Icon(Icons.create),
+                onPressed: () {
+                  _changeIsEditing(true);
+                },
+              ),
+            IconButton(
+              icon: const Icon(Icons.delete),
+              onPressed: () async {
+                await FirebaseFirestore.instance
+                    .collection('ranks')
+                    .doc(widget.name)
+                    .delete();
+              },
+            ),
+          ],
         ),
       ),
     );
