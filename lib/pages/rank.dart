@@ -174,23 +174,52 @@ class RankCard extends StatefulWidget {
 }
 
 class _RankCardState extends State<RankCard> {
+  String _name = '';
   bool _isEditing = false;
+  final _formKey = GlobalKey<FormState>();
   void _changeIsEditing(bool e) => setState(() => _isEditing = e);
 
   @override
   Widget build(BuildContext context) {
     return Card(
       child: ListTile(
-        title: _isEditing ? const TextField() : Text(widget.name),
+        title: _isEditing
+            ? Form(
+                // TODO: 名前のプリセット
+                key: _formKey,
+                child: TextFormField(
+                  autovalidateMode: AutovalidateMode.onUserInteraction,
+                  validator: (value) {
+                    final res = NameValidator.validate(value!);
+                    if (res != '') {
+                      return res;
+                    }
+                  },
+                  onChanged: (String value) {
+                    setState(() {
+                      _name = value;
+                    });
+                  },
+                ))
+            : Text(widget.name),
         trailing: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
             if (_isEditing)
               IconButton(
                 icon: const Icon(Icons.check),
-                onPressed: () {
-                  // TODO: 変更後のネームを永続化する
-                  _changeIsEditing(false);
+                onPressed: () async {
+                  if (_formKey.currentState!.validate()) {
+                    await FirebaseFirestore.instance
+                        .collection('ranks')
+                        .doc(widget.id)
+                        .update({'name': _name});
+                    _changeIsEditing(false);
+                  } else {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('入力値が不正です。')),
+                    );
+                  }
                 },
               )
             else
@@ -205,7 +234,7 @@ class _RankCardState extends State<RankCard> {
               onPressed: () async {
                 await FirebaseFirestore.instance
                     .collection('ranks')
-                    .doc(widget.name)
+                    .doc(widget.id)
                     .delete();
               },
             ),
