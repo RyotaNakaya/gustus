@@ -185,9 +185,9 @@ class _RankCardState extends State<RankCard> {
       child: ListTile(
         title: _isEditing
             ? Form(
-                // TODO: 名前のプリセット
                 key: _formKey,
                 child: TextFormField(
+                  initialValue: widget.name,
                   autovalidateMode: AutovalidateMode.onUserInteraction,
                   validator: (value) {
                     final res = NameValidator.validate(value!);
