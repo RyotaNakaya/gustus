@@ -258,33 +258,60 @@ class RankItemCard extends StatefulWidget {
 }
 
 class _RankItemCardState extends State<RankItemCard> {
+  String _name = '';
+  bool _isEditing = false;
+  void _changeIsEditing(bool e) => setState(() => _isEditing = e);
+
   @override
   Widget build(BuildContext context) {
     return Card(
       child: ListTile(
         leading: Text('${widget.order + 1}位'),
-        title: Text(widget.name),
-        trailing: IconButton(
-          icon: const Icon(Icons.delete),
-          onPressed: () async {
-            final firestoreInstance = FirebaseFirestore.instance;
-            final ranks = await firestoreInstance
-                .collection('ranks')
-                .doc(widget.rankId)
-                .get();
-            final order = ranks['rank_item_order'];
-            // 削除対象の item_id を order から削除する
-            for (var i = 0; i < order.length; i++) {
-              if (order[i] == widget.id) {
-                order.removeAt(i);
-              }
-            }
-            firestoreInstance
-                .collection('ranks')
-                .doc(widget.rankId)
-                .update({'rank_item_order': order});
-            firestoreInstance.collection('rank_items').doc(widget.id).delete();
-          },
+        title: _isEditing ? const TextField() : Text(widget.name),
+        trailing: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (_isEditing)
+              IconButton(
+                icon: const Icon(Icons.check),
+                onPressed: () {
+                  // TODO: 変更後のネームを永続化する
+                  _changeIsEditing(false);
+                },
+              )
+            else
+              IconButton(
+                icon: const Icon(Icons.create),
+                onPressed: () {
+                  _changeIsEditing(true);
+                },
+              ),
+            IconButton(
+              icon: const Icon(Icons.delete),
+              onPressed: () async {
+                final firestoreInstance = FirebaseFirestore.instance;
+                final ranks = await firestoreInstance
+                    .collection('ranks')
+                    .doc(widget.rankId)
+                    .get();
+                final order = ranks['rank_item_order'];
+                // 削除対象の item_id を order から削除する
+                for (var i = 0; i < order.length; i++) {
+                  if (order[i] == widget.id) {
+                    order.removeAt(i);
+                  }
+                }
+                firestoreInstance
+                    .collection('ranks')
+                    .doc(widget.rankId)
+                    .update({'rank_item_order': order});
+                firestoreInstance
+                    .collection('rank_items')
+                    .doc(widget.id)
+                    .delete();
+              },
+            ),
+          ],
         ),
       ),
     );
