@@ -260,6 +260,7 @@ class RankItemCard extends StatefulWidget {
 class _RankItemCardState extends State<RankItemCard> {
   String _name = '';
   bool _isEditing = false;
+  final _formKey = GlobalKey<FormState>();
   void _changeIsEditing(bool e) => setState(() => _isEditing = e);
 
   @override
@@ -267,16 +268,45 @@ class _RankItemCardState extends State<RankItemCard> {
     return Card(
       child: ListTile(
         leading: Text('${widget.order + 1}位'),
-        title: _isEditing ? const TextField() : Text(widget.name),
+        title: _isEditing
+            ? Form(
+                key: _formKey,
+                child: TextFormField(
+                  initialValue: widget.name,
+                  autovalidateMode: AutovalidateMode.onUserInteraction,
+                  validator: (value) {
+                    final res = NameValidator.validate(value!);
+                    if (res != '') {
+                      return res;
+                    }
+                  },
+                  onChanged: (String value) {
+                    setState(() {
+                      _name = value;
+                    });
+                  },
+                ))
+            : Text(widget.name),
         trailing: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
             if (_isEditing)
               IconButton(
                 icon: const Icon(Icons.check),
-                onPressed: () {
-                  // TODO: 変更後のネームを永続化する
-                  _changeIsEditing(false);
+                onPressed: () async {
+                  if (_formKey.currentState!.validate()) {
+                    if (_name != widget.name) {
+                      await FirebaseFirestore.instance
+                          .collection('rank_items')
+                          .doc(widget.id)
+                          .update({'name': _name});
+                    }
+                    _changeIsEditing(false);
+                  } else {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('入力値が不正です。')),
+                    );
+                  }
                 },
               )
             else
