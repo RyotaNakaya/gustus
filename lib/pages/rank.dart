@@ -210,10 +210,12 @@ class _RankCardState extends State<RankCard> {
                 icon: const Icon(Icons.check),
                 onPressed: () async {
                   if (_formKey.currentState!.validate()) {
-                    await FirebaseFirestore.instance
-                        .collection('ranks')
-                        .doc(widget.id)
-                        .update({'name': _name});
+                    if (_name != widget.name) {
+                      await FirebaseFirestore.instance
+                          .collection('ranks')
+                          .doc(widget.id)
+                          .update({'name': _name});
+                    }
                     _changeIsEditing(false);
                   } else {
                     ScaffoldMessenger.of(context).showSnackBar(
@@ -226,6 +228,7 @@ class _RankCardState extends State<RankCard> {
               IconButton(
                 icon: const Icon(Icons.create),
                 onPressed: () {
+                  _name = widget.name;
                   _changeIsEditing(true);
                 },
               ),
