@@ -183,33 +183,39 @@ class _RankItemAddPageState extends State<RankItemAddPage> {
                   style: ElevatedButton.styleFrom(
                     primary: Colors.blue,
                   ),
-                  onPressed: () async {
+                  onPressed: () {
                     if (_formKey.currentState!.validate()) {
                       final date = DateTime.now().toLocal().toIso8601String();
                       final firestoreInstance = FirebaseFirestore.instance;
-                      final ref = await firestoreInstance
-                          .collection('rank_items') // コレクションID指定
-                          .add({
-                        'rank_id': widget.rankId,
-                        'name': _name,
-                        'user_id': user.uid,
-                        'date': date
+                      firestoreInstance.runTransaction((transaction) async {
+                        // add rank item
+                        final ref =
+                            firestoreInstance.collection('rank_items').doc();
+                        transaction.set(ref, {
+                          'rank_id': widget.rankId,
+                          'name': _name,
+                          'user_id': user.uid,
+                          'date': date
+                        });
+
+                        // update rank item order
+                        final ranks = await firestoreInstance
+                            .collection('ranks')
+                            .doc(widget.rankId)
+                            .get();
+                        final order = ranks['rank_item_order'];
+                        if (_targetOrder == 0) {
+                          order.add(ref.id);
+                        } else {
+                          // array index が 0 start なのでマイナス1する
+                          order.insert(_targetOrder - 1, ref.id);
+                        }
+                        transaction.update(
+                            firestoreInstance
+                                .collection('ranks')
+                                .doc(widget.rankId),
+                            {'rank_item_order': order});
                       });
-                      final ranks = await firestoreInstance
-                          .collection('ranks')
-                          .doc(widget.rankId)
-                          .get();
-                      final order = ranks['rank_item_order'];
-                      if (_targetOrder == 0) {
-                        order.add(ref.id);
-                      } else {
-                        // array index が 0 start なのでマイナス1する
-                        order.insert(_targetOrder - 1, ref.id);
-                      }
-                      await firestoreInstance
-                          .collection('ranks')
-                          .doc(widget.rankId)
-                          .update({'rank_item_order': order});
                       // 1つ前の画面に戻る
                       Navigator.of(context).pop();
                     } else {
